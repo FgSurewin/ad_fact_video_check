@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P1 Human Test</title>
+<style>
+:root {
+  --bg: #f7f7f5; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #deded8;
+  --accent: #2f5fd0; --accent-soft: #e6edfb; --done: #2e8b57; --part: #e7a400; --t: #2e8b57; --f: #c0392b; --flag: #9a5800; --flag-bg: #fdf0d8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161615; --card: #20201f; --ink: #ececea; --muted: #a3a39d; --line: #3a3a37;
+    --accent: #7ea2ff; --accent-soft: #26304a; --done: #5cc48b; --part: #e7b43a; --t: #2f8f5b; --f: #c4493b; --flag: #f0be5a; --flag-bg: #3a2f17;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161615; --card: #20201f; --ink: #ececea; --muted: #a3a39d; --line: #3a3a37;
+  --accent: #7ea2ff; --accent-soft: #26304a; --done: #5cc48b; --part: #e7b43a; --t: #2f8f5b; --f: #c4493b; --flag: #f0be5a; --flag-bg: #3a2f17;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { position: sticky; top: 0; z-index: 3; background: var(--card); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; max-width: 1280px; margin: 0 auto; }
+.bar h1 { font-size: 16px; margin: 0 6px 0 0; }
+.bar input[type=text] { padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 140px; }
+button { font: inherit; padding: 4px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); cursor: pointer; }
+button:hover { border-color: var(--accent); }
+.progress { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.spacer { flex: 1; }
+main { max-width: 1280px; margin: 0 auto; padding: 14px 16px 40px; }
+.jump { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 12px; }
+.jump span { width: 9px; height: 13px; border-radius: 2px; background: var(--line); cursor: pointer; }
+.jump span.full { background: var(--done); }
+.jump span.cur { outline: 2px solid var(--accent); outline-offset: 1px; }
+.cols { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 960px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.viewer { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.viewer img { width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #000; border-radius: 6px; }
+.ctrl { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; width: 100%; }
+.tlabel { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted); min-width: 110px; text-align: right; }
+.strip { display: flex; gap: 1px; width: 100%; height: 10px; cursor: pointer; }
+.strip .c { flex: 1; background: var(--line); }
+.strip .c.cur { background: var(--ink); }
+.thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+.thumb { width: 84px; cursor: pointer; border: 2px solid transparent; border-radius: 4px; }
+.thumb img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; display: block; border-radius: 2px; }
+.thumb.cur { border-color: var(--ink); }
+.num { font-size: 13px; color: var(--muted); }
+.stmt { font-size: 24px; line-height: 1.35; font-weight: 600; margin: 10px 0 14px; }
+.q { font-size: 14px; color: var(--muted); }
+.answers { display: flex; gap: 10px; margin-top: 8px; }
+.answers button { flex: 1; font-size: 18px; padding: 10px 12px; }
+.answers button.on.t { background: var(--t); border-color: var(--t); color: #fff; }
+.answers button.on.f { background: var(--f); border-color: var(--f); color: #fff; }
+.flags { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+.flags label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font-size: 14px; }
+.flags label.on { background: var(--flag-bg); border-color: var(--flag); }
+.flags input { margin-top: 4px; }
+.state { font-size: 13px; margin-top: 10px; color: var(--muted); }
+.state.done { color: var(--done); }
+.nav { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+.k { font: 12px ui-monospace, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--bg); color: var(--ink); }
+.help { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 10; display: none; overflow: auto; padding: 30px 16px; }
+.help.show { display: block; }
+.help .box { max-width: 760px; margin: 0 auto; background: var(--card); border-radius: 10px; padding: 18px 22px; border: 1px solid var(--line); }
+.help h2 { margin-top: 0; font-size: 18px; }
+.help h3 { font-size: 15px; margin: 16px 0 4px; }
+.help table { border-collapse: collapse; font-size: 14px; }
+.help td { padding: 2px 10px 2px 0; vertical-align: top; }
+.help ul { padding-left: 20px; margin: 4px 0; }
+.toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+.toast.show { opacity: 1; }
+@media (max-width: 600px) { .thumb { width: 64px; } .stmt { font-size: 20px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1>P1 human test</h1>
+    <input type="text" id="name" placeholder="your name" aria-label="Your name">
+    <span class="progress" id="progress"></span>
+    <span class="spacer"></span>
+    <button id="expJson" title="Save your answers (send this file back)">Export</button>
+    <button id="imp" title="Load your own export, e.g. on another computer">Import</button>
+    <input type="file" id="file" accept=".json" hidden>
+    <button id="helpBtn" title="Instructions (?)">?</button>
+  </div>
+</header>
+<main>
+  <div class="jump" id="jump" aria-label="All statements"></div>
+  <div class="cols">
+    <div class="card" id="viewer"></div>
+    <div class="card" id="item"></div>
+  </div>
+</main>
+<div class="help" id="help"><div class="box">
+  <h2>How it works</h2>
+  <p>You will see 300 short statements, one at a time, each with the frames of a short film clip (about 10 to 18 seconds,
+  2 frames per second, no sound). For each statement, decide whether it is <b>true</b> or <b>false</b> based only on these frames.</p>
+  <ul>
+    <li><b>Answer every statement</b>, even when you are not sure: give your best guess.</li>
+    <li>Some statements are true and some are false. Each clip appears twice, with different statements: judge each statement on its own.</li>
+    <li>People are described without names ("a man", "a girl"). Take the statement as it is written.</li>
+    <li>Play the clip or click through the frames as often as you like. There is no time limit, but please do not look anything up.</li>
+  </ul>
+  <h3>The two boxes (tick only when they apply; both can be ticked)</h3>
+  <table>
+    <tr><td><span class="k">q</span></td><td><b>I did not find this detail in the frames.</b> You looked but could not find the thing the statement is about
+      (too small, too short, or you could not spot it), so your answer is a guess.</td></tr>
+    <tr><td><span class="k">w</span></td><td><b>The statement is unclear.</b> You cannot tell what it claims: odd or wrong words, broken grammar, or more than one
+      reading.</td></tr>
+  </table>
+  <h3>Keys</h3>
+  <table>
+    <tr><td><span class="k">1</span> / <span class="k">2</span></td><td>true / false</td></tr>
+    <tr><td><span class="k">q</span> / <span class="k">w</span></td><td>tick or untick "did not find" / "unclear"</td></tr>
+    <tr><td><span class="k">Enter</span> or <span class="k">→</span></td><td>next statement; <span class="k">←</span> previous</td></tr>
+    <tr><td><span class="k">u</span></td><td>next statement without an answer</td></tr>
+    <tr><td><span class="k">Space</span>, <span class="k">,</span> / <span class="k">.</span></td><td>play or pause, previous / next frame</td></tr>
+    <tr><td><span class="k">?</span></td><td>this help</td></tr>
+  </table>
+  <h3>Saving and sending</h3>
+  <p>Answers are saved in this browser as you go, so you can stop and come back. It takes about an hour in total; breaks are fine.
+  When you are done, press <b>Export</b> and send the file (<code>p1_human_&lt;name&gt;_&lt;date&gt;.json</code>). To move to another computer,
+  Export there and Import here.</p>
+  <p><button id="helpClose">Start / close</button></p>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>
+var DATA = {"package_id":"p1-human-reference-S3.4-20261111","frame_base":"frames/","sequence":[{"sid":"s001","clip":"c001","statement":"A man sweeps the deck on the bow."},{"sid":"s002","clip":"c002","statement":"A man rubs his eyes."},{"sid":"s003","clip":"c003","statement":"A man glances at the pill bottles."},{"sid":"s004","clip":"c004","statement":"A person is in the back."},{"sid":"s005","clip":"c005","statement":"A shorter boy pushes a woman's hands away."},{"sid":"s006","clip":"c006","statement":"Two porcupines play."},{"sid":"s007","clip":"c007","statement":"An officer tries to force open a door."},{"sid":"s008","clip":"c008","statement":"A man washes his face."},{"sid":"s009","clip":"c009","statement":"A man spits."},{"sid":"s010","clip":"c010","statement":"A man raises a rock above his head."},{"sid":"s011","clip":"c011","statement":"A man sees a chandelier reflected in the mirror."},{"sid":"s012","clip":"c012","statement":"A guard knocks on a door from the outside."},{"sid":"s013","clip":"c013","statement":"A man nods at a woman."},{"sid":"s014","clip":"c014","statement":"A cat climbs on top of the dogs' cages."},{"sid":"s015","clip":"c015","statement":"A woman drinks from a glass."},{"sid":"s016","clip":"c016","statement":"A woman pushes a man's shoulders away with both hands."},{"sid":"s017","clip":"c017","statement":"A man rattles his gun bolt."},{"sid":"s018","clip":"c018","statement":"A man weighs a sample of weed."},{"sid":"s019","clip":"c019","statement":"A woman looks at her girlfriends."},{"sid":"s020","clip":"c020","statement":"A man embraces a woman."},{"sid":"s021","clip":"c021","statement":"A man sweeps leaves in the yard."},{"sid":"s022","clip":"c022","statement":"A train comes to a complete stop at the platform."},{"sid":"s023","clip":"c023","statement":"A man walks by."},{"sid":"s024","clip":"c024","statement":"A woman walks to the kitchenette."},{"sid":"s025","clip":"c025","statement":"A truck crashes head-on into vehicles."},{"sid":"s026","clip":"c026","statement":"The window is on the top floor."},{"sid":"s027","clip":"c027","statement":"A woman leans into the microphone."},{"sid":"s028","clip":"c028","statement":"A friar kneels down."},{"sid":"s029","clip":"c029","statement":"A woman pours a drink for herself."},{"sid":"s030","clip":"c030","statement":"A person takes a book."},{"sid":"s031","clip":"c031","statement":"A man binds a woman's hands."},{"sid":"s032","clip":"c032","statement":"Officers sit playing cards."},{"sid":"s033","clip":"c033","statement":"A man covers his eyes with both hands."},{"sid":"s034","clip":"c034","statement":"A man repeatedly presses a lift call button."},{"sid":"s035","clip":"c035","statement":"A man drums his fingers."},{"sid":"s036","clip":"c036","statement":"A man slams his head back at another man."},{"sid":"s037","clip":"c037","statement":"A gun's barrel bends sideways."},{"sid":"s038","clip":"c038","statement":"A woman floats on her back in the water."},{"sid":"s039","clip":"c039","statement":"A woman surveys a room."},{"sid":"s040","clip":"c040","statement":"People fasten a man's alert pendant around his neck."},{"sid":"s041","clip":"c041","statement":"A woman crosses a room."},{"sid":"s042","clip":"c042","statement":"A man lands on the rubbish bags."},{"sid":"s043","clip":"c043","statement":"A woman turns her gaze forward."},{"sid":"s044","clip":"c044","statement":"The air conditioning duct leads to the telegraph building."},{"sid":"s045","clip":"c045","statement":"An orc climbs a boulder in the forest."},{"sid":"s046","clip":"c046","statement":"The gun is on the stairs."},{"sid":"s047","clip":"c047","statement":"A man takes a drag on his cigarette."},{"sid":"s048","clip":"c048","statement":"A man applauds."},{"sid":"s049","clip":"c049","statement":"Leaves catch fire."},{"sid":"s050","clip":"c050","statement":"A man hoists himself out of the car."},{"sid":"s051","clip":"c051","statement":"A woman gazes at a man."},{"sid":"s052","clip":"c052","statement":"A porcupine applies lipstick."},{"sid":"s053","clip":"c053","statement":"The stack of note paper is next to the typewriter."},{"sid":"s054","clip":"c054","statement":"People take off their clothes."},{"sid":"s055","clip":"c055","statement":"A woman leans over the desk."},{"sid":"s056","clip":"c056","statement":"A man rubs his chin."},{"sid":"s057","clip":"c057","statement":"A man hands a glass of water to a woman."},{"sid":"s058","clip":"c058","statement":"A man is in the tub."},{"sid":"s059","clip":"c059","statement":"A man chuckles."},{"sid":"s060","clip":"c060","statement":"A man examines the floor beneath his feet."},{"sid":"s061","clip":"c061","statement":"Scientists serve food to men in the room."},{"sid":"s062","clip":"c062","statement":"A man sprays foam from a fire extinguisher into another man's head."},{"sid":"s063","clip":"c063","statement":"A woman reads a book."},{"sid":"s064","clip":"c064","statement":"Kids ride their bikes past a person's window."},{"sid":"s065","clip":"c065","statement":"Something ricochets off the side of a man's skull."},{"sid":"s066","clip":"c066","statement":"A man leans against the railing by the flight of stairs."},{"sid":"s067","clip":"c067","statement":"A man reaches in his pocket."},{"sid":"s068","clip":"c068","statement":"A man puts on a hat."},{"sid":"s069","clip":"c069","statement":"A man tapes another man's flank."},{"sid":"s070","clip":"c070","statement":"A woman holds a man close."},{"sid":"s071","clip":"c071","statement":"A man lifts a receiver."},{"sid":"s072","clip":"c072","statement":"A man reloads his weapon."},{"sid":"s073","clip":"c073","statement":"A woman cautiously pushes a door open."},{"sid":"s074","clip":"c074","statement":"A woman sweeps near the glass door."},{"sid":"s075","clip":"c075","statement":"A man places a folded cloth over a woman's eyes."},{"sid":"s076","clip":"c076","statement":"A man cuts another man's restraints."},{"sid":"s077","clip":"c077","statement":"A person is beneath the desk."},{"sid":"s078","clip":"c078","statement":"A team creeps around a house's side."},{"sid":"s079","clip":"c079","statement":"The fighters join a ref."},{"sid":"s080","clip":"c080","statement":"A man continues to track another man on his phone."},{"sid":"s081","clip":"c081","statement":"The explosions are in the street."},{"sid":"s082","clip":"c082","statement":"A man puts his hand over his nose."},{"sid":"s083","clip":"c083","statement":"A man opens a bag up."},{"sid":"s084","clip":"c084","statement":"A man climbs onto the roof of a car."},{"sid":"s085","clip":"c085","statement":"A woman softly covers her mouth with her hand."},{"sid":"s086","clip":"c086","statement":"A man lifts a woman onto his shoulders."},{"sid":"s087","clip":"c087","statement":"A cow straightens its bow tie."},{"sid":"s088","clip":"c088","statement":"Arms thrust money through the door."},{"sid":"s089","clip":"c089","statement":"A woman tries to crawl away."},{"sid":"s090","clip":"c090","statement":"Hands quickly drill screws."},{"sid":"s091","clip":"c091","statement":"A man covers his ears as he looks at the woman."},{"sid":"s092","clip":"c092","statement":"A gentleman wears a baseball cap."},{"sid":"s093","clip":"c093","statement":"A flashlight is clamped between a doll's teeth."},{"sid":"s094","clip":"c094","statement":"A cowboy walks away from the demons."},{"sid":"s095","clip":"c095","statement":"A woman bites another woman's hand."},{"sid":"s096","clip":"c096","statement":"A man stares incredulously at people."},{"sid":"s097","clip":"c097","statement":"Cases fall onto the roof."},{"sid":"s098","clip":"c098","statement":"A person peers at another person."},{"sid":"s099","clip":"c099","statement":"A woman tightly grips the doorknob."},{"sid":"s100","clip":"c100","statement":"A shape lowers its head away from the windows."},{"sid":"s101","clip":"c101","statement":"A blockage shows up in blue."},{"sid":"s102","clip":"c102","statement":"A woman hands a notebook to a professor."},{"sid":"s103","clip":"c103","statement":"A woman speaks on a mobile phone before the mirror."},{"sid":"s104","clip":"c104","statement":"A woman crawls away from another woman across the floor."},{"sid":"s105","clip":"c105","statement":"A taxi drives past the van."},{"sid":"s106","clip":"c106","statement":"A man wears a bow tie."},{"sid":"s107","clip":"c107","statement":"A man hangs up a phone."},{"sid":"s108","clip":"c108","statement":"A man leans against a backstage counter."},{"sid":"s109","clip":"c109","statement":"A person shakes hands with another person politely."},{"sid":"s110","clip":"c110","statement":"A co-pilot shuts a pilot inside."},{"sid":"s111","clip":"c111","statement":"A man tosses the pieces."},{"sid":"s112","clip":"c112","statement":"A woman kneels down on the cobblestones."},{"sid":"s113","clip":"c113","statement":"A man heaves himself forwards."},{"sid":"s114","clip":"c114","statement":"A man lifts a mannequin's head by its wig of tips."},{"sid":"s115","clip":"c115","statement":"People turn to a male."},{"sid":"s116","clip":"c116","statement":"The men lock eyes."},{"sid":"s117","clip":"c117","statement":"A man stands."},{"sid":"s118","clip":"c118","statement":"A guy at the table waves his hand at the people to stop."},{"sid":"s119","clip":"c119","statement":"Men suddenly pounce on the woman."},{"sid":"s120","clip":"c120","statement":"A woman rests her head against the lap bar."},{"sid":"s121","clip":"c121","statement":"A man checks the wires."},{"sid":"s122","clip":"c122","statement":"The pyramid contraption is on a man's chest."},{"sid":"s123","clip":"c123","statement":"A man clutches a briefcase before him with both hands."},{"sid":"s124","clip":"c124","statement":"People sweep the floor by the window."},{"sid":"s125","clip":"c125","statement":"A panda and a snow leopard grapple."},{"sid":"s126","clip":"c126","statement":"A man's side is wounded."},{"sid":"s127","clip":"c127","statement":"A man leans against a corner."},{"sid":"s128","clip":"c128","statement":"A car's hood is open."},{"sid":"s129","clip":"c129","statement":"A man waves at the group of thugs."},{"sid":"s130","clip":"c130","statement":"Reindeer gallop across the plain."},{"sid":"s131","clip":"c131","statement":"A man wheels himself out of the tunnel."},{"sid":"s132","clip":"c132","statement":"A cat climbs."},{"sid":"s133","clip":"c133","statement":"Two men stand leaning against a wall."},{"sid":"s134","clip":"c134","statement":"A man hoists a boy onto his shoulders."},{"sid":"s135","clip":"c135","statement":"A man waves to a girl."},{"sid":"s136","clip":"c136","statement":"A man taps a woman on her calf."},{"sid":"s137","clip":"c137","statement":"A man places a rat on a person's belly."},{"sid":"s138","clip":"c138","statement":"A man crawls along the ground."},{"sid":"s139","clip":"c139","statement":"A man hands over a pipe."},{"sid":"s140","clip":"c140","statement":"It is raining outside."},{"sid":"s141","clip":"c141","statement":"Police cars join."},{"sid":"s142","clip":"c142","statement":"A man goes to the swimming pool."},{"sid":"s143","clip":"c143","statement":"A birthday boy throws up violently."},{"sid":"s144","clip":"c144","statement":"A man takes the key from the woman."},{"sid":"s145","clip":"c145","statement":"A man flings another man at the brick wall."},{"sid":"s146","clip":"c146","statement":"The couch is at the back of a room."},{"sid":"s147","clip":"c147","statement":"A man shoots out the supports."},{"sid":"s148","clip":"c148","statement":"A man puts change in a guy's palm."},{"sid":"s149","clip":"c149","statement":"A man sweeps debris off the fire escape."},{"sid":"s150","clip":"c150","statement":"A man downs the liquor."},{"sid":"s151","clip":"c076","statement":"A man tightens another man's restraints."},{"sid":"s152","clip":"c077","statement":"A person is on top of the desk."},{"sid":"s153","clip":"c078","statement":"A team climbs over the roof of a house."},{"sid":"s154","clip":"c079","statement":"The fighters circle each other away from the ref."},{"sid":"s155","clip":"c080","statement":"A man places a phone call to another man on his phone."},{"sid":"s156","clip":"c081","statement":"The explosions are on the rooftops."},{"sid":"s157","clip":"c082","statement":"A man covers his ears with both hands."},{"sid":"s158","clip":"c083","statement":"A man tears a bag into pieces."},{"sid":"s159","clip":"c084","statement":"A man swerves to avoid a car."},{"sid":"s160","clip":"c085","statement":"A woman softly shakes her head."},{"sid":"s161","clip":"c086","statement":"A man throws a woman to the ground."},{"sid":"s162","clip":"c087","statement":"A cow takes off its bow tie."},{"sid":"s163","clip":"c088","statement":"Arms toss a key through the door."},{"sid":"s164","clip":"c089","statement":"A woman climbs up onto a counter."},{"sid":"s165","clip":"c090","statement":"Hands quickly hammer nails."},{"sid":"s166","clip":"c091","statement":"A man reaches out for the woman."},{"sid":"s167","clip":"c092","statement":"A gentleman wears a cowboy hat."},{"sid":"s168","clip":"c093","statement":"A knife is clamped between a doll's teeth."},{"sid":"s169","clip":"c094","statement":"A cowboy turns to the demons."},{"sid":"s170","clip":"c095","statement":"A woman seizes another woman's head."},{"sid":"s171","clip":"c096","statement":"A man hands an object to people."},{"sid":"s172","clip":"c097","statement":"Cases fall into the vent."},{"sid":"s173","clip":"c098","statement":"A person shakes hands with another person."},{"sid":"s174","clip":"c099","statement":"A woman knocks on the door."},{"sid":"s175","clip":"c100","statement":"A shape's head turns to the windows."},{"sid":"s176","clip":"c101","statement":"A blockage shows up in orange."},{"sid":"s177","clip":"c102","statement":"A woman stares at a professor."},{"sid":"s178","clip":"c103","statement":"A woman cleans up before the mirror."},{"sid":"s179","clip":"c104","statement":"A woman climbs atop another woman."},{"sid":"s180","clip":"c105","statement":"A police car drives past the van."},{"sid":"s181","clip":"c106","statement":"A man wears a cravat."},{"sid":"s182","clip":"c107","statement":"A man takes photos with a camera."},{"sid":"s183","clip":"c108","statement":"A man walks out of the arena."},{"sid":"s184","clip":"c109","statement":"A person pulls another person in for a hug."},{"sid":"s185","clip":"c110","statement":"A co-pilot pulls a pilot outside."},{"sid":"s186","clip":"c111","statement":"A man stacks the pieces."},{"sid":"s187","clip":"c112","statement":"A woman runs across the cobblestones."},{"sid":"s188","clip":"c113","statement":"A man covers his face with both hands."},{"sid":"s189","clip":"c114","statement":"A man kicks a mannequin's head across the stage."},{"sid":"s190","clip":"c115","statement":"People applaud a male."},{"sid":"s191","clip":"c116","statement":"The men embrace."},{"sid":"s192","clip":"c117","statement":"A man walks away."},{"sid":"s193","clip":"c118","statement":"A guy at the table nods at the people to follow."},{"sid":"s194","clip":"c119","statement":"Men walk past the woman."},{"sid":"s195","clip":"c120","statement":"A woman presses up on the lap bar."},{"sid":"s196","clip":"c121","statement":"A man photographs the wires."},{"sid":"s197","clip":"c122","statement":"The pyramid contraption is on a man's head."},{"sid":"s198","clip":"c123","statement":"A man clutches a gun before him with both hands."},{"sid":"s199","clip":"c124","statement":"People watch from the window."},{"sid":"s200","clip":"c125","statement":"A panda and a snow leopard bow to each other."},{"sid":"s201","clip":"c126","statement":"A man's arm is wounded."},{"sid":"s202","clip":"c127","statement":"A man turns a corner."},{"sid":"s203","clip":"c128","statement":"A car's hood is closed."},{"sid":"s204","clip":"c129","statement":"A man aims at the group of thugs."},{"sid":"s205","clip":"c130","statement":"Reindeer graze quietly across the plain."},{"sid":"s206","clip":"c131","statement":"A man is pushed in a wheelchair out of the tunnel."},{"sid":"s207","clip":"c132","statement":"A cat falls."},{"sid":"s208","clip":"c133","statement":"Two men approach on foot."},{"sid":"s209","clip":"c134","statement":"A man puts a boy down."},{"sid":"s210","clip":"c135","statement":"A man stares at a girl."},{"sid":"s211","clip":"c136","statement":"A man taps a woman on her shoulder."},{"sid":"s212","clip":"c137","statement":"A man places a rat on a person's shoulder."},{"sid":"s213","clip":"c138","statement":"A man leaps up."},{"sid":"s214","clip":"c139","statement":"A man sets down a pipe."},{"sid":"s215","clip":"c140","statement":"It is snowing outside."},{"sid":"s216","clip":"c141","statement":"Police cars pull over to the side."},{"sid":"s217","clip":"c142","statement":"A man goes to the tanning room."},{"sid":"s218","clip":"c143","statement":"A birthday boy takes photos with a camera."},{"sid":"s219","clip":"c144","statement":"A man places a necklace around the woman's neck."},{"sid":"s220","clip":"c145","statement":"A man helps another man stand up gently against the brick wall."},{"sid":"s221","clip":"c146","statement":"The couch is in the center of a room."},{"sid":"s222","clip":"c147","statement":"A man repairs the supports."},{"sid":"s223","clip":"c148","statement":"A man drops a slice of pizza into a guy's palm."},{"sid":"s224","clip":"c149","statement":"A man tumbles down the fire escape."},{"sid":"s225","clip":"c150","statement":"A man pours the liquor onto the floor."},{"sid":"s226","clip":"c001","statement":"A man remains on the bow."},{"sid":"s227","clip":"c002","statement":"A man nods."},{"sid":"s228","clip":"c003","statement":"A man picks up the pill bottles."},{"sid":"s229","clip":"c004","statement":"A person is on the roof of the car."},{"sid":"s230","clip":"c005","statement":"A shorter boy takes a woman's hands."},{"sid":"s231","clip":"c006","statement":"Two porcupines eat snacks."},{"sid":"s232","clip":"c007","statement":"An officer walks away down the hallway from a door."},{"sid":"s233","clip":"c008","statement":"A man submerges himself."},{"sid":"s234","clip":"c009","statement":"A man laughs."},{"sid":"s235","clip":"c010","statement":"A man sets a rock down on the ground."},{"sid":"s236","clip":"c011","statement":"A man sees a front door reflected in the mirror."},{"sid":"s237","clip":"c012","statement":"A guard closes a door from the outside."},{"sid":"s238","clip":"c013","statement":"A man covers a woman's mouth."},{"sid":"s239","clip":"c014","statement":"A cat runs around the dogs' cages."},{"sid":"s240","clip":"c015","statement":"A woman wipes her eyes."},{"sid":"s241","clip":"c016","statement":"A woman grinds her butt into a man's crotch."},{"sid":"s242","clip":"c017","statement":"A man drops his gun onto the ground."},{"sid":"s243","clip":"c018","statement":"A man smokes a sample of weed."},{"sid":"s244","clip":"c019","statement":"A woman waves at her girlfriends."},{"sid":"s245","clip":"c020","statement":"A man flips a woman."},{"sid":"s246","clip":"c021","statement":"A man calmly strides into the yard."},{"sid":"s247","clip":"c022","statement":"A train pulls away."},{"sid":"s248","clip":"c023","statement":"A man crawls by."},{"sid":"s249","clip":"c024","statement":"A woman crawls to the kitchenette."},{"sid":"s250","clip":"c025","statement":"A truck narrowly misses vehicles."},{"sid":"s251","clip":"c026","statement":"The window is on the ground floor."},{"sid":"s252","clip":"c027","statement":"A woman taps on the microphone."},{"sid":"s253","clip":"c028","statement":"A friar steps back."},{"sid":"s254","clip":"c029","statement":"A woman lights a cigar for herself."},{"sid":"s255","clip":"c030","statement":"A person pushes away a book."},{"sid":"s256","clip":"c031","statement":"A man helps a woman up."},{"sid":"s257","clip":"c032","statement":"Officers rush over."},{"sid":"s258","clip":"c033","statement":"A man scans about himself."},{"sid":"s259","clip":"c034","statement":"A man repeatedly kicks a lift call button."},{"sid":"s260","clip":"c035","statement":"A man covers his face with his hands."},{"sid":"s261","clip":"c036","statement":"A man stomps on the foot of another man."},{"sid":"s262","clip":"c037","statement":"A gun's barrel falls off."},{"sid":"s263","clip":"c038","statement":"A woman walks out of the water."},{"sid":"s264","clip":"c039","statement":"A woman reads a book."},{"sid":"s265","clip":"c040","statement":"People put a man's alert pendant away."},{"sid":"s266","clip":"c041","statement":"A woman sits on a sofa in a room."},{"sid":"s267","clip":"c042","statement":"A man lands on the roof of a parked car."},{"sid":"s268","clip":"c043","statement":"A woman buries her face in her hands."},{"sid":"s269","clip":"c044","statement":"The air conditioning duct leads to a stadium."},{"sid":"s270","clip":"c045","statement":"An orc gallops through the forest."},{"sid":"s271","clip":"c046","statement":"The gun is on the landing."},{"sid":"s272","clip":"c047","statement":"A man snuffs out his cigarette."},{"sid":"s273","clip":"c048","statement":"A man clicks."},{"sid":"s274","clip":"c049","statement":"Leaves fall."},{"sid":"s275","clip":"c050","statement":"A man lies across the back seat."},{"sid":"s276","clip":"c051","statement":"A woman pushes a man."},{"sid":"s277","clip":"c052","statement":"A porcupine applies eyeshadow."},{"sid":"s278","clip":"c053","statement":"The stack of note paper is next to the phone."},{"sid":"s279","clip":"c054","statement":"People button up their jackets."},{"sid":"s280","clip":"c055","statement":"A woman moves away."},{"sid":"s281","clip":"c056","statement":"A man taps his fingers."},{"sid":"s282","clip":"c057","statement":"A man kisses a woman."},{"sid":"s283","clip":"c058","statement":"A man is in the sink cabinet."},{"sid":"s284","clip":"c059","statement":"A man weeps."},{"sid":"s285","clip":"c060","statement":"A man looks up through the hole in the ceiling."},{"sid":"s286","clip":"c061","statement":"Scientists test men in the room."},{"sid":"s287","clip":"c062","statement":"A man swings a fire extinguisher into another man's head."},{"sid":"s288","clip":"c063","statement":"A woman gazes around."},{"sid":"s289","clip":"c064","statement":"Kids push their bikes past a person's window on foot."},{"sid":"s290","clip":"c065","statement":"Something goes out through the side of a man's skull."},{"sid":"s291","clip":"c066","statement":"A man disappears down the flight of stairs."},{"sid":"s292","clip":"c067","statement":"A man covers his face with both hands."},{"sid":"s293","clip":"c068","statement":"A man takes off his glasses."},{"sid":"s294","clip":"c069","statement":"A man hits another man's flank."},{"sid":"s295","clip":"c070","statement":"A woman pushes a man away."},{"sid":"s296","clip":"c071","statement":"A man wipes down a receiver."},{"sid":"s297","clip":"c072","statement":"A man holsters his weapon."},{"sid":"s298","clip":"c073","statement":"A woman vigorously knocks on the door."},{"sid":"s299","clip":"c074","statement":"A woman runs through the glass door."},{"sid":"s300","clip":"c075","statement":"A man waves his hand over a woman's eyes."}],"clips":{"c001":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c002":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c003":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c004":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]},"c005":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c006":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c007":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c008":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c009":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c010":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]},"c011":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c012":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c013":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c014":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c015":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c016":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c017":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c018":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c019":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c020":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c021":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]},"c022":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]},"c023":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c024":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c025":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c026":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c027":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c028":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c029":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c030":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c031":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c032":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c033":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]},"c034":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c035":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c036":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c037":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c038":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33]},"c039":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c040":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c041":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c042":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c043":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c044":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c045":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c046":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c047":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c048":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c049":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c050":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c051":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c052":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c053":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c054":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c055":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c056":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c057":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c058":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c059":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c060":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c061":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]},"c062":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c063":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c064":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c065":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c066":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c067":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c068":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c069":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c070":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c071":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c072":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c073":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]},"c074":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c075":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c076":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c077":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c078":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]},"c079":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c080":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c081":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c082":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c083":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c084":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c085":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c086":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c087":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c088":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c089":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c090":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c091":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c092":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]},"c093":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c094":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c095":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]},"c096":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c097":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c098":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c099":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c100":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c101":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c102":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c103":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c104":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29]},"c105":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c106":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c107":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c108":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c109":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c110":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c111":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c112":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c113":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c114":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c115":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c116":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c117":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c118":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c119":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c120":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c121":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c122":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c123":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c124":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]},"c125":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43]},"c126":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c127":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c128":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c129":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]},"c130":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c131":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35]},"c132":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c133":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c134":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33]},"c135":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c136":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c137":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c138":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]},"c139":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c140":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c141":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]},"c142":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c143":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25]},"c144":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]},"c145":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c146":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28]},"c147":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24]},"c148":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]},"c149":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27]},"c150":{"frames":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]}}};
+(function () {
+  'use strict';
+  var SEQ = DATA.sequence, CLIPS = DATA.clips, STORE = 'p1human:' + DATA.package_id;
+  var state = { reviewer: '', started_at: null, answers: {}, cur: 0 };
+  try { var s = JSON.parse(localStorage.getItem(STORE) || 'null'); if (s && s.answers) state = Object.assign(state, s); } catch (e) {}
+  function save() { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} }
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function toast(t) { var e = $('toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function () { e.classList.remove('show'); }, 1800); }
+  function it() { return SEQ[state.cur]; }
+  function clip() { return CLIPS[it().clip]; }
+  function ans(sid) { return state.answers[sid] || null; }
+  function done(sid) { var a = ans(sid); return !!(a && (a.answer === 'true' || a.answer === 'false')); }
+
+  // dwell time: time the statement is on screen while the page is visible
+  var shownAt = null;
+  function now() { return Date.now(); }
+  function flushDwell() {
+    if (shownAt === null) return;
+    var a = ensure(it().sid); a.dwell_ms = (a.dwell_ms || 0) + (now() - shownAt); shownAt = now(); save();
+  }
+  function ensure(sid) {
+    var a = state.answers[sid];
+    if (!a) { a = state.answers[sid] = { answer: '', not_found: false, unclear: false, first_answer: '', changes: 0, visits: 0, dwell_ms: 0, t_first_shown: new Date().toISOString() }; }
+    return a;
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) { flushDwell(); shownAt = null; } else { shownAt = now(); } });
+
+  var frame = 0, timer = null;
+  function pad(i) { return ('000' + i).slice(-4); }
+  function src(i) { return DATA.frame_base + it().clip + '/f' + pad(clip().frames[i]) + '.jpg'; }
+  function showFrame(i) {
+    var n = clip().frames.length; frame = Math.max(0, Math.min(n - 1, i));
+    $('big').src = src(frame);
+    $('tl').textContent = (frame * 0.5).toFixed(1) + ' s · ' + (frame + 1) + ' / ' + n;
+    Array.prototype.forEach.call(document.querySelectorAll('.strip .c, .thumb'), function (e) { e.classList.toggle('cur', +e.dataset.i === frame); });
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } var b = $('play'); if (b) b.textContent = '▶ play'; }
+  function play() {
+    if (timer) { stop(); return; }
+    if (frame >= clip().frames.length - 1) showFrame(0);
+    $('play').textContent = '❚❚ pause';
+    timer = setInterval(function () { if (frame >= clip().frames.length - 1) stop(); else showFrame(frame + 1); }, 500);
+  }
+  function renderViewer() {
+    stop();
+    var C = clip(), h = '<div class="viewer"><img id="big" alt="frame"><div class="ctrl">' +
+      '<button id="pf" title="previous frame (,)">‹</button><button id="play" title="play / pause (Space)">▶ play</button>' +
+      '<button id="nf" title="next frame (.)">›</button><span class="tlabel" id="tl"></span></div><div class="strip">';
+    C.frames.forEach(function (f, i) { h += '<div class="c" data-i="' + i + '"></div>'; });
+    h += '</div></div><div class="thumbs">';
+    C.frames.forEach(function (f, i) { h += '<div class="thumb" data-i="' + i + '"><img src="' + src(i) + '" alt=""></div>'; });
+    h += '</div>';
+    $('viewer').innerHTML = h;
+    $('pf').onclick = function () { stop(); showFrame(frame - 1); };
+    $('nf').onclick = function () { stop(); showFrame(frame + 1); };
+    $('play').onclick = play;
+    Array.prototype.forEach.call(document.querySelectorAll('.strip .c, .thumb'), function (e) { e.onclick = function () { stop(); showFrame(+e.dataset.i); }; });
+    showFrame(0);
+  }
+  function renderItem() {
+    var x = it(), a = ans(x.sid) || {};
+    var h = '<div class="num">Statement ' + (state.cur + 1) + ' of ' + SEQ.length + '</div>' +
+      '<div class="q">Based only on these frames, is this statement true?</div>' +
+      '<div class="stmt">' + esc(x.statement) + '</div>' +
+      '<div class="answers"><button class="t' + (a.answer === 'true' ? ' on' : '') + '" data-a="true"><span class="k">1</span> True</button>' +
+      '<button class="f' + (a.answer === 'false' ? ' on' : '') + '" data-a="false"><span class="k">2</span> False</button></div>' +
+      '<div class="flags"><label class="' + (a.not_found ? 'on' : '') + '"><input type="checkbox" id="nf1"' + (a.not_found ? ' checked' : '') + '><span><span class="k">q</span> I did not find this detail in the frames (my answer is a guess)</span></label>' +
+      '<label class="' + (a.unclear ? 'on' : '') + '"><input type="checkbox" id="uc1"' + (a.unclear ? ' checked' : '') + '><span><span class="k">w</span> The statement is unclear</span></label></div>' +
+      '<div class="state' + (done(x.sid) ? ' done' : '') + '">' + (done(x.sid) ? '✓ answered' : 'not answered yet') + '</div>' +
+      '<div class="nav"><button id="prev">← previous</button><button id="next">next →</button><button id="todo">next unanswered (u)</button></div>';
+    $('item').innerHTML = h;
+    Array.prototype.forEach.call(document.querySelectorAll('.answers button'), function (b) { b.onclick = function () { answer(b.dataset.a); }; });
+    $('nf1').onchange = function () { flag('not_found', this.checked); };
+    $('uc1').onchange = function () { flag('unclear', this.checked); };
+    $('prev').onclick = function () { go(state.cur - 1); };
+    $('next').onclick = function () { go(state.cur + 1); };
+    $('todo').onclick = nextTodo;
+  }
+  function renderJump() {
+    var h = '';
+    SEQ.forEach(function (x, i) { h += '<span class="' + (done(x.sid) ? 'full' : '') + (i === state.cur ? ' cur' : '') + '" data-i="' + i + '" title="' + (i + 1) + '"></span>'; });
+    $('jump').innerHTML = h;
+    Array.prototype.forEach.call($('jump').children, function (e) { e.onclick = function () { go(+e.dataset.i); }; });
+    $('progress').textContent = SEQ.filter(function (x) { return done(x.sid); }).length + ' / ' + SEQ.length + ' answered';
+  }
+  var shownClip = null;
+  function render() {
+    var a = ensure(it().sid); a.visits = (a.visits || 0) + 1;
+    if (!state.started_at) state.started_at = new Date().toISOString();
+    if (shownClip !== it().clip || !$('big')) { renderViewer(); shownClip = it().clip; } else { stop(); showFrame(0); }
+    renderItem(); renderJump(); save();
+    shownAt = document.hidden ? null : now();
+  }
+  function go(i) {
+    if (i < 0) { toast('first statement'); return; }
+    if (i >= SEQ.length) { toast('last statement: press Export when you are done'); return; }
+    flushDwell(); state.cur = i; render(); window.scrollTo(0, 0);
+  }
+  function nextTodo() {
+    for (var s = 1; s <= SEQ.length; s++) { var i = (state.cur + s) % SEQ.length; if (!done(SEQ[i].sid)) { go(i); return; } }
+    toast('all statements are answered');
+  }
+  function answer(v) {
+    var a = ensure(it().sid);
+    if (a.answer && a.answer !== v) a.changes = (a.changes || 0) + 1;
+    if (!a.first_answer) { a.first_answer = v; a.t_first_answer = new Date().toISOString(); a.dwell_to_first_answer_ms = (a.dwell_ms || 0) + (shownAt === null ? 0 : now() - shownAt); }
+    a.answer = v; a.t_updated = new Date().toISOString(); save(); renderItem(); renderJump();
+  }
+  function flag(f, on) { var a = ensure(it().sid); a[f] = on; a.t_updated = new Date().toISOString(); save(); renderItem(); }
+
+  function stamp() { return new Date().toISOString().slice(0, 10); }
+  function who() { return (state.reviewer || '').trim().replace(/[^A-Za-z0-9_-]+/g, '_'); }
+  function exportJson() {
+    if (!who()) { toast('enter your name first'); $('name').focus(); return; }
+    flushDwell();
+    var out = { package_id: DATA.package_id, page: 'human_test', reviewer: state.reviewer, started_at: state.started_at, exported_at: new Date().toISOString(),
+      n_items: SEQ.length, n_answered: SEQ.filter(function (x) { return done(x.sid); }).length, answers: {} };
+    SEQ.forEach(function (x, i) { var a = ans(x.sid); if (a) { var o = JSON.parse(JSON.stringify(a)); o.position = i + 1; o.statement = x.statement; out.answers[x.sid] = o; } });
+    var b = new Blob([JSON.stringify(out, null, 1)], { type: 'application/json' }), u = URL.createObjectURL(b), l = document.createElement('a');
+    l.href = u; l.download = 'p1_human_' + who() + '_' + stamp() + '.json'; document.body.appendChild(l); l.click(); setTimeout(function () { URL.revokeObjectURL(u); l.remove(); }, 500);
+  }
+  function importText(name, text) {
+    var d = JSON.parse(text);
+    if (d.package_id !== DATA.package_id || d.page !== 'human_test') { toast('not an export of this test'); return; }
+    var n = 0, ids = {}; SEQ.forEach(function (x) { ids[x.sid] = true; });
+    Object.keys(d.answers || {}).forEach(function (sid) { if (ids[sid]) { var a = d.answers[sid]; delete a.position; delete a.statement; state.answers[sid] = a; n++; } });
+    if (d.reviewer) { state.reviewer = d.reviewer; $('name').value = d.reviewer; }
+    if (d.started_at && !state.started_at) state.started_at = d.started_at;
+    save(); render(); toast('imported ' + n + ' statements');
+  }
+
+  $('name').value = state.reviewer || '';
+  $('name').oninput = function () { state.reviewer = this.value.trim(); save(); };
+  $('expJson').onclick = exportJson;
+  $('imp').onclick = function () { $('file').value = ''; $('file').click(); };
+  $('file').onchange = function () {
+    var f = this.files[0]; if (!f) return;
+    var rd = new FileReader(); rd.onload = function () { try { importText(f.name, rd.result); } catch (e) { toast('could not read ' + f.name); } }; rd.readAsText(f);
+  };
+  function help(show) { $('help').classList.toggle('show', show); }
+  $('helpBtn').onclick = function () { help(true); };
+  $('helpClose').onclick = function () { help(false); };
+  $('help').onclick = function (e) { if (e.target === $('help')) help(false); };
+  document.addEventListener('keydown', function (e) {
+    var t = e.target, typing = t && (t.tagName === 'INPUT' && t.type === 'text');
+    if (typing) { if (e.key === 'Escape' || e.key === 'Enter') { t.blur(); e.preventDefault(); } return; }
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key;
+    if ($('help').classList.contains('show')) { if (k === 'Escape' || k === '?' || k === 'Enter') { help(false); e.preventDefault(); } return; }
+    var map = {
+      '1': function () { answer('true'); }, '2': function () { answer('false'); },
+      'q': function () { flag('not_found', !(ans(it().sid) || {}).not_found); }, 'w': function () { flag('unclear', !(ans(it().sid) || {}).unclear); },
+      'Enter': function () { go(state.cur + 1); }, 'ArrowRight': function () { go(state.cur + 1); }, 'ArrowLeft': function () { go(state.cur - 1); },
+      'u': nextTodo, ' ': play, ',': function () { stop(); showFrame(frame - 1); }, '.': function () { stop(); showFrame(frame + 1); },
+      '?': function () { help(true); }
+    };
+    if (map[k]) { e.preventDefault(); map[k](); }
+  });
+  window.addEventListener('beforeunload', flushDwell);
+  if (state.cur >= SEQ.length) state.cur = 0;
+  render();
+  if (!SEQ.some(function (x) { return done(x.sid); })) help(true);
+})();
+</script>
+</body>
+</html>
